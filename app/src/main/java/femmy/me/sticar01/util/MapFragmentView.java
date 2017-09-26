@@ -124,7 +124,7 @@ public class MapFragmentView {
     public void setMarker(double lat, double lng){
         GeoCoordinate geo = new GeoCoordinate(lat, lng, zoom);
         m_map.setCenter(geo,Map.Animation.LINEAR);
-        m_map.setZoomLevel(14);
+        m_map.setZoomLevel(17);
         m_map_marker.setCoordinate(geo);
     }
 
