@@ -1,7 +1,12 @@
 package femmy.me.sticar01.ui.main;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
@@ -32,12 +37,22 @@ import com.mancj.slideup.SlideUpBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import femmy.me.sticar01.R;
+import femmy.me.sticar01.application.App;
 import femmy.me.sticar01.util.MapFragmentView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-                    View.OnClickListener{
+        MainContract.View,
+        LocationListener,
+        View.OnClickListener {
+
+    @Inject
+    MainPresenter presenter;
+
+    MainComponent actvComponent;
 
     private final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
     private MapFragmentView m_mapFragmentView;
@@ -49,17 +64,43 @@ public class MainActivity extends AppCompatActivity
     SlideUp slideUp;
     private View dim;
 
+    private LocationManager locationManager;
+    private String provider;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        actvComponent = DaggerMainComponent.builder()
+                .mainModule(new MainModule(this))
+                .appComponent(App.get(this).getComponent()).build();
+        actvComponent.inject(this);
+
         initView();
-        requestPermissions();
+        presenter.requestPermission(this);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        presenter.initLocationManager(locationManager);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        locationManager.requestLocationUpdates(provider, 400, 1, this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        locationManager.removeUpdates(this);
     }
 
 
-    private void initView(){
+    private void initView() {
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         fabMenu = (FloatingActionButton) findViewById(R.id.fab);
         fabMenu.setOnClickListener(this);
@@ -67,7 +108,7 @@ public class MainActivity extends AppCompatActivity
         fabRefresh = (FloatingActionButton) findViewById(R.id.fab_refresh);
         fabRefresh.setOnClickListener(this);
 
-        btnOpenBottomDrawer  = (Button) findViewById(R.id.btn_open_bottom_drawer);
+        btnOpenBottomDrawer = (Button) findViewById(R.id.btn_open_bottom_drawer);
         btnOpenBottomDrawer.setOnClickListener(this);
         btnCloseBottomDrawer = (Button) findViewById(R.id.btn_close_bottom_drawer);
         btnCloseBottomDrawer.setOnClickListener(this);
@@ -83,7 +124,6 @@ public class MainActivity extends AppCompatActivity
 
         setNavItemCount(R.id.nav_camera);
         View headerView = navigationView.inflateHeaderView(R.layout.nav_header_main);
-        //navigationView.addHeaderView(view);
         btnCloseDrawer = (Button) headerView.findViewById(R.id.btn_drawer_close);
         btnCloseDrawer.setOnClickListener(this);
 
@@ -98,7 +138,8 @@ public class MainActivity extends AppCompatActivity
                     }
 
                     @Override
-                    public void onVisibilityChanged(int visibility) {}
+                    public void onVisibilityChanged(int visibility) {
+                    }
                 })
                 .withStartState(SlideUp.State.HIDDEN)
                 .withLoggingEnabled(true)
@@ -116,40 +157,12 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        }
-
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-
-    private void requestPermissions() {
-
-        final List<String> requiredSDKPermissions = new ArrayList<String>();
-        requiredSDKPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        requiredSDKPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        requiredSDKPermissions.add(Manifest.permission.INTERNET);
-        requiredSDKPermissions.add(Manifest.permission.ACCESS_WIFI_STATE);
-        requiredSDKPermissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
-
-        ActivityCompat.requestPermissions(this,
-                requiredSDKPermissions.toArray(new String[requiredSDKPermissions.size()]),
-                REQUEST_CODE_ASK_PERMISSIONS);
     }
 
     @Override
@@ -164,8 +177,7 @@ public class MainActivity extends AppCompatActivity
                          * If the user turned down the permission request in the past and chose the
                          * Don't ask again option in the permission request system dialog.
                          */
-                        if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
-                                permissions[index])) {
+                        if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[index])) {
                             Toast.makeText(this,
                                     "Required permission " + permissions[index] + " not granted. "
                                             + "Please go to settings and turn on for sample app",
@@ -192,15 +204,15 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onClick(View view) {
-        if(view.getId() == fabMenu.getId()){
+        if (view.getId() == fabMenu.getId()) {
             drawer.openDrawer(GravityCompat.START);
-        } else if(view.getId() == btnCloseDrawer.getId()){
+        } else if (view.getId() == btnCloseDrawer.getId()) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if(view.getId() == fabRefresh.getId()){
+        } else if (view.getId() == fabRefresh.getId()) {
+            Toast.makeText(this,"Reloading...",Toast.LENGTH_LONG).show();
+        } else if (view.getId() == btnOpenBottomDrawer.getId()) {
             slideUp.show();
-        } else if(view.getId() == btnOpenBottomDrawer.getId()){
-            slideUp.show();
-        }else if(view.getId() == btnCloseBottomDrawer.getId()){
+        } else if (view.getId() == btnCloseBottomDrawer.getId()) {
             slideUp.hide();
         }
     }
@@ -208,5 +220,40 @@ public class MainActivity extends AppCompatActivity
     private void setNavItemCount(@IdRes int itemId) {
         RelativeLayout view = (RelativeLayout) navigationView.getMenu().findItem(itemId).getActionView();
         view.setVisibility(View.VISIBLE);
+    }
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if(m_mapFragmentView != null) {
+            double lat = location.getLatitude();
+            double lng = location.getLongitude();
+            m_mapFragmentView.setMarker(lat,lng);
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        Toast.makeText(this, "Enabled new provider " + provider,Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Toast.makeText(this, "Disabled provider " + provider,Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void locationIniated(String provider, Location location) {
+        this.provider = provider;
+        if (location != null) {
+            onLocationChanged(location);
+        } else {
+            Toast.makeText(this,"Location not available",Toast.LENGTH_SHORT).show();
+        }
     }
 }
