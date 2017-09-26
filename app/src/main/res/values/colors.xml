@@ -8,4 +8,6 @@
     <color name="white">#ffffff</color>
     <color name="greydark">#666666</color>
     <color name="greylight">#cccccc</color>
+    <color name="dimBg">#bf000000</color>
+    <color name="greydarktrp">#80666666</color>
 </resources>

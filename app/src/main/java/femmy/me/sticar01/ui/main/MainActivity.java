@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -20,9 +21,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.mancj.slideup.SlideUp;
+import com.mancj.slideup.SlideUpBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +43,12 @@ public class MainActivity extends AppCompatActivity
     private MapFragmentView m_mapFragmentView;
 
     DrawerLayout drawer;
-    FloatingActionButton fabMenu;
+    FloatingActionButton fabMenu, fabRefresh;
     NavigationView navigationView;
-    Button btnCloseDrawer;
+    Button btnCloseDrawer, btnOpenBottomDrawer, btnCloseBottomDrawer;
+    SlideUp slideUp;
+    private View dim;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +64,13 @@ public class MainActivity extends AppCompatActivity
         fabMenu = (FloatingActionButton) findViewById(R.id.fab);
         fabMenu.setOnClickListener(this);
 
+        fabRefresh = (FloatingActionButton) findViewById(R.id.fab_refresh);
+        fabRefresh.setOnClickListener(this);
 
+        btnOpenBottomDrawer  = (Button) findViewById(R.id.btn_open_bottom_drawer);
+        btnOpenBottomDrawer.setOnClickListener(this);
+        btnCloseBottomDrawer = (Button) findViewById(R.id.btn_close_bottom_drawer);
+        btnCloseBottomDrawer.setOnClickListener(this);
 
         // init nav & set fullwidth
         navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -72,6 +86,24 @@ public class MainActivity extends AppCompatActivity
         //navigationView.addHeaderView(view);
         btnCloseDrawer = (Button) headerView.findViewById(R.id.btn_drawer_close);
         btnCloseDrawer.setOnClickListener(this);
+
+
+        dim = findViewById(R.id.dim);
+        RelativeLayout bottomPanelSlide = (RelativeLayout) findViewById(R.id.panel_bottom_drawer);
+        slideUp = new SlideUpBuilder(bottomPanelSlide)
+                .withListeners(new SlideUp.Listener.Events() {
+                    @Override
+                    public void onSlide(float percent) {
+                        dim.setAlpha(1 - (percent / 100));
+                    }
+
+                    @Override
+                    public void onVisibilityChanged(int visibility) {}
+                })
+                .withStartState(SlideUp.State.HIDDEN)
+                .withLoggingEnabled(true)
+                .withGesturesEnabled(true)
+                .withStartGravity(Gravity.BOTTOM).build();
     }
 
     @Override
@@ -164,6 +196,12 @@ public class MainActivity extends AppCompatActivity
             drawer.openDrawer(GravityCompat.START);
         } else if(view.getId() == btnCloseDrawer.getId()){
             drawer.closeDrawer(GravityCompat.START);
+        } else if(view.getId() == fabRefresh.getId()){
+            slideUp.show();
+        } else if(view.getId() == btnOpenBottomDrawer.getId()){
+            slideUp.show();
+        }else if(view.getId() == btnCloseBottomDrawer.getId()){
+            slideUp.hide();
         }
     }
 

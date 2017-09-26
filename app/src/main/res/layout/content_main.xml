@@ -1,32 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <fragment
         class="com.here.android.mpa.mapping.MapFragment"
         android:id="@+id/mapfragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-    <Button
-        android:id="@+id/btn_map_zoom"
+    <FrameLayout
+        android:alpha="0"
+        android:id="@+id/dim"
+        android:fitsSystemWindows="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/dimBg" />
+    <RelativeLayout
         android:layout_alignParentBottom="true"
-        android:layout_marginLeft="16dp"
-        android:layout_marginBottom="40dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:text="zoom"/>
-    <Button
-        android:layout_above="@+id/btn_map_zoom"
-        android:id="@+id/btn_map_center"
-        android:layout_marginLeft="16dp"
+        android:background="@drawable/bg_half_circle"
+        android:layout_centerHorizontal="true"
+        android:layout_width="64dp"
+        android:layout_height="32dp">
+        <Button
+            android:layout_centerInParent="true"
+            android:id="@+id/btn_open_bottom_drawer"
+            android:background="@drawable/ic_keyboard_arrow_up"
+            android:layout_width="28dp"
+            android:layout_height="20dp" />
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_alignParentBottom="true"
         android:layout_marginBottom="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:text="center"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:id="@+id/wrap_btn_map_zoom"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="16dp"
+            android:layout_marginBottom="40dp"
+            android:background="@drawable/btn_circle_trp"
+            android:layout_width="wrap_content"
+            android:padding="4dp"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btn_map_zoom"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/ic_zoom_in"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_above="@+id/wrap_btn_map_zoom"
+            android:id="@+id/wrap_btn_map_center"
+            android:layout_marginLeft="16dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/btn_circle_trp"
+            android:layout_width="wrap_content"
+            android:padding="4dp"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btn_map_center"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/ic_my_location"/>
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <include layout="@layout/bottom_panel" />
+
 
 </RelativeLayout>

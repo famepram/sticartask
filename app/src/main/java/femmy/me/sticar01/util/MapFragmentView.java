@@ -83,7 +83,7 @@ public class MapFragmentView {
                         //initParentUI();
                     }
                     createMapMarker();
-                    initParentUI();
+                    //initParentUI();
                 }
             });
         }
