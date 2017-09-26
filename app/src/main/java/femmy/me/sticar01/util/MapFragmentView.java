@@ -36,6 +36,8 @@ public class MapFragmentView {
     private MapMarker m_map_marker;
     private Button btnZoom;
 
+    private Button btnCenter;
+
     public MapFragmentView(Activity activity) {
         m_activity = activity;
         initMapFragment();
@@ -48,6 +50,16 @@ public class MapFragmentView {
             @Override
             public void onClick(View view) {
                 m_map.setZoomLevel( m_map.getZoomLevel() * 1.05 );
+            }
+        });
+
+        btnCenter = (Button) m_activity.findViewById(R.id.btn_map_center);
+        btnCenter.setVisibility(View.VISIBLE);
+        btnCenter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                m_map.setCenter(new GeoCoordinate(49.259149, -123.008555, 0.0),Map.Animation.LINEAR);
+                m_map.setZoomLevel(14);
             }
         });
     }

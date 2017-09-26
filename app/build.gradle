@@ -38,6 +38,7 @@ dependencies {
     compile 'com.google.dagger:dagger:2.8'
     compile 'javax.inject:javax.inject:1'
     compile 'de.hdodenhof:circleimageview:2.1.0'
+    compile 'com.github.mancj:SlideUp-Android:2.2.7.1'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.8'
     provided 'javax.annotation:jsr250-api:1.0'
